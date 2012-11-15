@@ -9,9 +9,9 @@ The graticule plugin displays a grid of latitude/longitude lines projected on th
 
 ### Usage
 
-'''javascript
+```javascript
 L.graticule().addTo(map);
-'''
+```
 
 ```javascript
 L.graticule({
