@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Graticule - Leaflet</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
+  <!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css" /><![endif]-->
+  <link rel="stylesheet" href="css/map.css" />
+  <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script> 
+  <script src="lib/proj4js-compressed.js"></script>
+  <script src="lib/proj4leaflet.js"></script>    
+  <script src="../src/L.Graticule.js"></script>    
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+
+    var crs = L.CRS.proj4js('ESRI:54009', '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
+    crs.scale = function(zoom) {
+      return 1 / (131072 / Math.pow(2, zoom));
+    };
+
+    var map = new L.Map('map', {
+      crs: crs,
+      worldCopyJump: false
+    }).setView([0,0], 2);
+
+    L.graticule({
+      surface: true,
+      style: {
+        fillColor: '#99b3cc',
+        fillOpacity: 1,
+        weight: 0
+      }      
+    }).addTo(map);
+
+    L.graticule({
+      onEachFeature: function(feature, layer) {
+        layer.bindPopup('<strong>' + feature.properties.name + '</strong>');
+      }
+    }).addTo(map);
+
+  </script>
+</body>
+</html>

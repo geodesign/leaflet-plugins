@@ -1,20 +1,27 @@
+/*
+ Copyright (c) 2012, Bjorn Sandvik
+ Graticule plugin for Leaflet powered maps.
+ https://github.com/turban/leaflet-plugins
+*/
 L.Graticule = L.GeoJSON.extend({
 
   options: {
-    interval: 20,
-    precision: 1
+    style: {
+      color: '#333',
+      weight: 1
+    },
+    interval: 20
   },
 
   initialize: function (options) {
     L.Util.setOptions(this, options);
     this._layers = {};
 
-    if (this.options.frame) {
+    if (this.options.surface) {
       this.addData(this._getFrame());
     } else {
       this.addData(this._getGraticule());      
     }
-
   },
 
   _getFrame: function() {
@@ -26,29 +33,28 @@ L.Graticule = L.GeoJSON.extend({
   },
 
   _getGraticule: function () {
-
-    var features = [], options = this.options;
+    var features = [], interval = this.options.interval;
 
     // Meridians
-    for (var lng = 0; lng <= 180; lng = lng + options.interval) {
+    for (var lng = 0; lng <= 180; lng = lng + interval) {
       features.push(this._getFeature(this._getMeridian(lng), {
-        "name": lng.toString()
+        "name": (lng) ? lng.toString() + "° E" : "Prime meridian"    
       }));
       if (lng !== 0) {
         features.push(this._getFeature(this._getMeridian(-lng), {
-          "name": -lng.toString()
+          "name": lng.toString() + "° W"
         }));    
       }
     }
 
     // Parallels
-    for (var lat = 0; lat <= 90; lat = lat + options.interval) {  
+    for (var lat = 0; lat <= 90; lat = lat + interval) {  
       features.push(this._getFeature(this._getParallel(lat), {
-        "name": lat.toString()
+        "name": (lat) ? lat.toString() + "° N" : "Equator"   
       }));
       if (lat !== 0) {
         features.push(this._getFeature(this._getParallel(-lat), {
-          "name": -lat.toString()
+          "name": lat.toString() + "° S"
         }));      
       }
     } 
@@ -63,7 +69,7 @@ L.Graticule = L.GeoJSON.extend({
   _getMeridian: function (lng) {
     lng = this._lngFix(lng);
     var coords = [];
-    for (var lat = -90; lat <= 90; lat = lat + this.options.precision) {
+    for (var lat = -90; lat <= 90; lat++) {
       coords.push([lng, lat]);
     }
     return coords;
@@ -71,7 +77,7 @@ L.Graticule = L.GeoJSON.extend({
 
   _getParallel: function (lat) {
     var coords = [];
-    for (var lng = -180; lng <= 180; lng = lng + this.options.precision) {
+    for (var lng = -180; lng <= 180; lng++) {
       coords.push([this._lngFix(lng), lat]);
     }
     return coords;    
@@ -82,9 +88,9 @@ L.Graticule = L.GeoJSON.extend({
       "type": "Feature",
       "geometry": {
         "type": "LineString",
-        "coordinates": coords,
-        "properties": prop
-      }
+        "coordinates": coords
+      },
+      "properties": prop
     }
   },
 
