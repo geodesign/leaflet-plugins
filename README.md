@@ -9,7 +9,28 @@ The graticule plugin displays a grid of latitude/longitude lines projected on th
 
 ### Usage
 
+'''javascript
 L.graticule().addTo(map);
+'''
+
+```javascript
+L.graticule({
+  onEachFeature: function(feature, layer) {
+    layer.bindPopup('<strong>' + feature.properties.name + '</strong>');
+  }
+}).addTo(map);
+```
+
+```javascript
+L.graticule({
+  surface: true,
+  style: {
+    fillColor: '#99b3cc',
+    fillOpacity: 1,
+    weight: 0
+  }      
+}).addTo(map);
+```
 
 ## L.Wax.js
 
