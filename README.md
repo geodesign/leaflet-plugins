@@ -1,2 +1,2 @@
-thematicmapping.org
-===================
+Leaflet plugins
+===============
