@@ -32,10 +32,4 @@ L.graticule({
 }).addTo(map);
 ```
 
-## L.Wax.js
 
-
-## L.CartoDB.js
-
-
-## L.Wax.js
