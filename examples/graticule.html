@@ -6,16 +6,32 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
   <!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css" /><![endif]-->
   <style>
+  
     html, body, #map { 
       width: 100%; 
       height: 100%;  
       margin: 0; 
     }  
+
+    .leaflet-label {
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);      
+      border-radius: 2px;   
+      font: 14px/16px Arial, Helvetica, sans-serif;        
+      display: block;
+      padding: 3px 5px;
+      position: absolute;
+      white-space: nowrap;
+      margin-top: 37px;
+    }
+
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script> 
+  <script src="lib/leaflet.label.js"></script>      
   <script src="lib/proj4js-compressed.js"></script>
   <script src="lib/proj4leaflet.js"></script>    
   <script src="../src/L.Graticule.js"></script>    
@@ -32,18 +48,9 @@
     }).setView([0,0], 2);
 
     L.graticule({
-      surface: true,
-      style: {
-        fillColor: '#99b3cc',
-        fillOpacity: 1,
-        weight: 0
-      }      
-    }).addTo(map);
-
-    L.graticule({
       interval: 10,
       onEachFeature: function(feature, layer) {
-        layer.bindPopup('<strong>' + feature.properties.name + '</strong>');
+        layer.bindLabel(feature.properties.name).addTo(map);
       }
     }).addTo(map);
 

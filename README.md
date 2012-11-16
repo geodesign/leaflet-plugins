@@ -7,6 +7,8 @@ Various plugins to make life easier with [Leaflet](http://leafletjs.com/).
 
 The graticule plugin displays a grid of latitude/longitude lines projected on the map. Extends [GeoJson](http://leafletjs.com/reference.html#geojson). 
 
+[Example](http://turban.github.com/leaflet-plugins/examples/graticule.html)
+
 ### Usage
 
 ```javascript
