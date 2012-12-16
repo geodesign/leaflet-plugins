@@ -12,21 +12,12 @@ L.Choropleth = L.GeoJSON.extend({
     values: null,
     numDecimals: 0,
     classification: 'equal',
-    numClasses: 6,
+    numClasses: 5,
     classBreaks: null,
     noDataValue: undefined,
-    noDataColor: 'CCC',
+    noDataColor: '#CCC',
     noDataLabel: 'No data', 
     unit: null,   
-    colors: {
-      3: ['FEE8C8','FDBB84','E34A33'],
-      4: ['FEF0D9','FDCC8A','FC8D59','D7301F'],   
-      5: ['FEF0D9','FDCC8A','FC8D59','E34A33','B30000'],   
-      6: ['FEF0D9','FDD49E','FDBB84','FC8D59','E34A33','B30000'],
-      7: ['FEF0D9','FDD49E','FDBB84','FC8D59','EF6548','D7301F','990000'],   
-      8: ['FFF7EC','FEE8C8','FDD49E','FDBB84','FC8D59','EF6548','D7301F','990000'],   
-      9: ['FFF7EC','FEE8C8','FDD49E','FDBB84','FC8D59','EF6548','D7301F','B30000','7F0000']
-    },
     normalStyle: {
       weight: 0.5,
       opacity: 1,
@@ -37,24 +28,34 @@ L.Choropleth = L.GeoJSON.extend({
       weight: 2
     },
     featureLabel: function(feature) {
-      var value = feature.properties[this.key] + ((this.unit) ? ' ' + this.unit : '');
+      var value = feature.properties[this.key];
       if (value === this.noDataValue) {
         value = this.noDataLabel;  
       }
-      return '<strong>' + feature.properties.name + '</strong><br/>' + value
+      return '<strong>' + feature.properties.name + '</strong><br/>' + ((this.unit) ? this.unit + ': ' : '') + value;
     }
   },
 
   initialize: function (geojson, options) {
     options = L.Util.setOptions(this, options);
     options.style = options.style || L.Util.bind(this._getStyle, this);
-    options.values = (options.data) ? this._addData(geojson, options.data) : this._getValues(geojson);
+
+    if (options.properties) {
+      this._addProperties(geojson.features, options.properties);
+    }
+
+    options.values = (options.data) ? this._addData(geojson, options.data) : this._getValues(geojson.features);
     options.classBreaks = options.classBreaks || this['_' + options.classification](options);
 
     if (!this._isArray(options.colors)) {
       options.colors = options.colors[options.numClasses];
     }
 
+    if (options.reverseColors) {
+      options.colors.reverse()
+    }
+
+    this._createLegend(options.classBreaks, options.colors);
 
     this._layers = {};
 
@@ -66,18 +67,30 @@ L.Choropleth = L.GeoJSON.extend({
     this.addData(geojson);
   },
 
-  // When layer added
-  onAdd: function (map) {
-    this._map = map;
-    this.eachLayer(map.addLayer, map);
-    this._addLegend(); 
+  changeValues: function (key) {
+
+    console.log(changeValues, key, this);
+
   },
 
-  // When layer removed
-  onRemove: function (map) {
-    this.eachLayer(map.removeLayer, map);
-    this._map = null;
-    this._legend.removeFrom(map); 
+  _createLegend: function (breaks, colors) {
+    var legend = [];
+    for (var i = 0; i < breaks.length - 1; i++) {
+      legend.push({
+        name: breaks[i] + ' &ndash; ' + breaks[i + 1],
+        color: colors[i]
+      })
+    }
+    this.options.legend = legend;
+  },
+
+  _addProperties: function (features, properties) {
+    for (var i = 0; i < features.length; i++) {
+      var feature = features[i];
+      if (feature.id && properties[feature.id]) {
+        feature.properties = L.Util.extend( properties[feature.id], feature.properties );
+      }
+    }
   },
 
   _addData: function (geojson, data) {
@@ -88,7 +101,11 @@ L.Choropleth = L.GeoJSON.extend({
           id = (options.id) ? feature.properties[options.id] : feature.id,
           value = data[id];
 
-      if (typeof value !== 'undefined') {
+      if (typeof value === 'object') {
+        feature.properties = value;
+      } 
+      else if (typeof value !== 'undefined') {
+        feature.properties = feature.properties || {};
         feature.properties.value = value;
         values.push(value);  
       } else {
@@ -100,14 +117,16 @@ L.Choropleth = L.GeoJSON.extend({
     return values.sort(function(a, b){ return a-b });
   },
 
-  // Extract values form GeoJSON
-  _getValues: function (geojson) {
+  // Extract values form features
+  _getValues: function (features) {
     var values = [], options = this.options;
-
-    for (var i = 0; i < geojson.features.length; i++) {
-      var value = geojson.features[i].properties[options.key];
-      if (value !== options.noDataValue) {
-        values.push(value);  
+    for (var i = 0; i < features.length; i++) {
+      var feature = features[i];
+      if (feature.properties) {
+        var value = features[i].properties[options.key];
+        if (value !== options.noDataValue) {
+          values.push(value);  
+        }
       }
     }
 
@@ -161,39 +180,14 @@ L.Choropleth = L.GeoJSON.extend({
     return breaks;
   },
 
-  _addLegend: function() {
-    this._legend = L.control({position: 'bottomright'});
-    this._legend.onAdd = L.Util.bind(this._createLegend, this);
-    this._legend.addTo(this._map);
-  },
-
-  _createLegend: function(map) {
-    var div = L.DomUtil.create('div', 'leaflet-legend'),
-        options = this.options,
-        breaks = options.classBreaks,
-        html = '';
-
-    if (options.name) {
-      html += '<h4>' + options.name + '</h4>';
-    }    
-    for (var i = 0; i < breaks.length - 1; i++) {
-      html += '<i style="background:#' +  options.colors[i] + '"></i> ' + breaks[i] + ' &ndash; ' + breaks[i + 1] + '<br>';
-    }
-    if (typeof options.noDataValue !== 'undefined') {
-      html += '<i style="background:#' +  options.noDataColor + '"></i> ' + options.noDataLabel + '<br>';
-    }
-    div.innerHTML = html;
-    return div;
-  },
-
   // Returns feature style
   _getStyle: function(feature) {
     var options = this.options,
-        value = feature.properties[options.key],
+        value = (feature.properties) ? feature.properties[options.key] : options.noDataValue,
         color = options.colors[this._getClass(value)],
         style = options.normalStyle;
 
-    style.fillColor = '#' + (color || options.noDataColor);
+    style.fillColor = color || options.noDataColor;
     return style;
   },
 
