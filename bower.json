@@ -1,0 +1,6 @@
+{
+  "name": "leaflet-plugins",
+  "ignore": [
+    "examples"
+  ]
+}
