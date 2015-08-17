@@ -16,7 +16,8 @@ L.Choropleth = L.GeoJSON.extend({
     classBreaks: null,
     noDataValue: undefined,
     noDataColor: '#CCC',
-    noDataLabel: 'No data', 
+    noDataLabel: 'No data',
+    noDataInLegend: false,
     unit: null,   
     normalStyle: {
       weight: 0.5,
@@ -80,6 +81,12 @@ L.Choropleth = L.GeoJSON.extend({
         name: breaks[i] + ' &ndash; ' + breaks[i + 1],
         color: colors[i]
       })
+    }
+    if(this.options.noDataInLegend){
+        legend.push({
+            name: this.options.noDataLabel,
+            color: this.options.noDataColor
+        })
     }
     this.options.legend = legend;
   },
