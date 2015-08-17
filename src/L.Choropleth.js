@@ -60,10 +60,8 @@ L.Choropleth = L.GeoJSON.extend({
 
     this._layers = {};
 
-    this.on({
-      mouseover: this._highlightFeature, 
-      mouseout: this._resetHighlight
-    });
+    // Mouseover highlight event
+    options.onEachFeature = L.Util.bind(this._onEachFeature, this);
 
     this.addData(geojson);
   },
@@ -198,9 +196,17 @@ L.Choropleth = L.GeoJSON.extend({
     return style;
   },
 
+  // OnEachFeature handler
+  _onEachFeature: function(feature, layer){
+      layer.on({
+          mouseover: L.Util.bind(this._highlightFeature, this),
+          mouseout: L.Util.bind(this._resetHighlight, this)
+      });
+  },
+
   // mouseover handler
   _highlightFeature: function(e) {
-    e.layer.setStyle(this.options.highlightStyle);
+    e.target.setStyle(this.options.highlightStyle);
     if (!L.Browser.ie && !L.Browser.opera) {
       e.layer.bringToFront();
     }
@@ -208,7 +214,7 @@ L.Choropleth = L.GeoJSON.extend({
 
   // mouseout handler
   _resetHighlight: function(e) {
-    this.resetStyle(e.layer);
+    this.resetStyle(e.target);
   },
 
   _isArray: function(input){
