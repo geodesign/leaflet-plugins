@@ -61,7 +61,7 @@ L.Choropleth = L.GeoJSON.extend({
     this._layers = {};
 
     // Mouseover highlight event
-    options.onEachFeature = L.Util.bind(this._onEachFeature, this);
+    if(!options.onEachFeature) options.onEachFeature = L.Util.bind(this._onEachFeature, this);
 
     this.addData(geojson);
   },
