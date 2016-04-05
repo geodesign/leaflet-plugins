@@ -190,7 +190,7 @@ L.Choropleth = L.GeoJSON.extend({
     var options = this.options,
         value = (feature.properties) ? feature.properties[options.key] : options.noDataValue,
         color = options.colors[this._getClass(value)],
-        style = options.normalStyle;
+        style = typeof options.normalStyle == 'function' ? options.normalStyle(feature) : options.normalStyle;
 
     style.fillColor = color || options.noDataColor;
     return style;
